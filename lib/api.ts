@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Note, FetchNotesParams, FetchNotesResponse, CreateNoteParams } from "@/types/note";
+import type { Note, FetchNotesParams, FetchNotesResponse, CreateNoteParams } from "@/types/api";
 
 const API_BASE_URL = 'https://notehub-public.goit.study/api';
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
