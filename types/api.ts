@@ -1,5 +1,5 @@
 
-import { Note } from "./note";
+import { Note, NoteTag } from "./note";
 
 export interface FetchNotesParams {
   page?: number;
