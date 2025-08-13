@@ -36,14 +36,13 @@ export default function NotesClient({ initialData }: NotesClientProps) {
   });
 
 
-  const handleCreateNote = useCallback((): void => {
+ const handleCreateNote = useCallback((): void => {
     setIsModalOpen(true);
   }, []);
 
   const handleCloseModal = useCallback((): void => {
     setIsModalOpen(false);
-    refetch();
-  }, [refetch]);
+  }, []);
 
   const handleSearchChange = useCallback((value: string): void => {
     setSearchTerm(value);
@@ -91,7 +90,13 @@ export default function NotesClient({ initialData }: NotesClientProps) {
 
       {isModalOpen && (
         <Modal onClose={handleCloseModal}>
-          <NoteForm onSuccess={handleCloseModal} />
+          <NoteForm 
+            onSuccess={() => {
+              handleCloseModal();
+              refetch();
+            }} 
+            onCancel={handleCloseModal}
+          />
         </Modal>
       )}
     </div>

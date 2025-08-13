@@ -11,6 +11,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.84.1",
     "@tanstack/react-query-devtools": "^5.84.1",
+    "@types/yup": "^0.29.14",
     "axios": "^1.11.0",
     "formik": "^2.4.6",
     "next": "15.4.5",
@@ -18,7 +19,7 @@
     "react-dom": "19.1.0",
     "react-paginate": "^8.3.0",
     "use-debounce": "^10.0.5",
-    "yup": "^1.6.1"
+    "yup": "^1.7.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote } from '@/lib/api';
 import css from './NoteForm.module.css';
@@ -8,13 +9,23 @@ import type { NoteTag } from '@/types/note';
 
 interface NoteFormProps {
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export default function NoteForm({ onSuccess }: NoteFormProps) {
-  const [title, setTitle] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-  const [tag, setTag] = useState<NoteTag>('Personal');
+const validationSchema = Yup.object().shape({
+  title: Yup.string()
+    .min(3, 'Title must be at least 3 characters')
+    .max(50, 'Title must be at most 50 characters')
+    .required('Title is required'),
+  content: Yup.string()
+    .max(500, 'Content must be at most 500 characters')
+    .required('Content is required'),
+  tag: Yup.string()
+    .oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'], 'Invalid tag')
+    .required('Tag is required'),
+});
 
+export default function NoteForm({ onSuccess, onCancel }: NoteFormProps) {
   const queryClient = useQueryClient();
 
   const createNoteMutation = useMutation({
@@ -25,68 +36,91 @@ export default function NoteForm({ onSuccess }: NoteFormProps) {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createNoteMutation.mutate({ title, content, tag });
+  const initialValues = {
+    title: '',
+    content: '',
+    tag: 'Personal' as NoteTag,
   };
 
-  const isPending = createNoteMutation.isPending;
-
   return (
-    <form className={css.form} onSubmit={handleSubmit}>
-      <h2 className={css.title}>Create New Note</h2>
-      <div className={css.formGroup}>
-        <label htmlFor="title" className={css.label}>Title</label>
-        <input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className={css.input}
-          placeholder="Note title"
-          required
-          disabled={isPending}
-        />
-      </div>
-      <div className={css.formGroup}>
-        <label htmlFor="content" className={css.label}>Content</label>
-        <textarea
-          id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className={css.textarea}
-          placeholder="Note content"
-          required
-          disabled={isPending}
-        />
-      </div>
-      <div className={css.formGroup}>
-        <label htmlFor="tag" className={css.label}>Tag</label>
-        <select
-          id="tag"
-          value={tag}
-          onChange={(e) => setTag(e.target.value as NoteTag)}
-          className={css.select}
-          disabled={isPending}
-        >
-          <option value="Personal">Personal</option>
-          <option value="Work">Work</option>
-          <option value="Todo">Todo</option>
-          <option value="Meeting">Meeting</option>
-          <option value="Shopping">Shopping</option>
-        </select>
-      </div>
-      <button
-        type="submit"
-        className={css.button}
-        disabled={isPending || !title || !content}
-      >
-        {isPending ? 'Creating...' : 'Create Note'}
-      </button>
-      {createNoteMutation.isError && (
-        <p className={css.error}>Error creating note: {createNoteMutation.error.message}</p>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={(values, { setSubmitting }) => {
+        createNoteMutation.mutate(values, {
+          onSettled: () => {
+            setSubmitting(false);
+          },
+        });
+      }}
+    >
+      {({ isSubmitting }) => (
+        <Form className={css.form}>
+          <h2 className={css.title}>Create New Note</h2>
+          
+          <div className={css.formGroup}>
+            <label htmlFor="title" className={css.label}>Title</label>
+            <Field
+              id="title"
+              name="title"
+              type="text"
+              className={css.input}
+              placeholder="Note title"
+              disabled={isSubmitting || createNoteMutation.isPending}
+            />
+            <ErrorMessage name="title" component="div" className={css.error} />
+          </div>
+
+          <div className={css.formGroup}>
+            <label htmlFor="content" className={css.label}>Content</label>
+            <Field
+              as="textarea"
+              id="content"
+              name="content"
+              className={css.textarea}
+              placeholder="Note content"
+              disabled={isSubmitting || createNoteMutation.isPending}
+            />
+            <ErrorMessage name="content" component="div" className={css.error} />
+          </div>
+
+          <div className={css.formGroup}>
+            <label htmlFor="tag" className={css.label}>Tag</label>
+            <Field
+              as="select"
+              id="tag"
+              name="tag"
+              className={css.select}
+              disabled={isSubmitting || createNoteMutation.isPending}
+            >
+              <option value="Personal">Personal</option>
+              <option value="Work">Work</option>
+              <option value="Todo">Todo</option>
+              <option value="Meeting">Meeting</option>
+              <option value="Shopping">Shopping</option>
+            </Field>
+            <ErrorMessage name="tag" component="div" className={css.error} />
+          </div>
+
+           <div className={css.actions}>
+            <button
+              type="button"
+              onClick={onCancel}
+              className={css.cancelButton}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={css.submitButton}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Creating...' : 'Create Note'}
+            </button>
+          </div>
+        </Form>
       )}
-    </form>
+    </Formik>
   );
 }
-
