@@ -10,13 +10,8 @@ import Pagination from '@/components/Pagination/Pagination';
 import Modal from '@/components/Modal/Modal';
 import NoteForm from '@/components/NoteForm/NoteForm';
 import { fetchNotes } from '@/lib/api';
-import type { FetchNotesResponse } from '@/types/api';
 
-interface NotesClientProps {
-  initialData: FetchNotesResponse;
-}
-
-export default function NotesClient({ initialData }: NotesClientProps) {
+export default function NotesClient() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [page, setPage] = useState<number>(1);
@@ -32,11 +27,9 @@ export default function NotesClient({ initialData }: NotesClientProps) {
     queryKey: ['notes', page, debouncedSearchTerm],
     queryFn: () => fetchNotes({ page, perPage: 12, search: debouncedSearchTerm }),
     placeholderData: (previousData) => previousData,
-    initialData: page === 1 && !debouncedSearchTerm ? initialData : undefined,
   });
 
-
- const handleCreateNote = useCallback((): void => {
+  const handleCreateNote = useCallback((): void => {
     setIsModalOpen(true);
   }, []);
 
